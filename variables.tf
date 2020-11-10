@@ -22,6 +22,10 @@ variable "aliases" {
     type = list
     default = []
 }
+variable "price_class" {
+    type = string
+    default = null
+}
 variable "web_acl_id" {
     type = string
     default = null
@@ -55,6 +59,6 @@ variable "viewer_certificate" {
     default = []
 }
 variable "default_tags" {
-    type = map(list)
-    default = []
+    type = map(string)
+    default = {}
 }

@@ -13,6 +13,7 @@ resource "aws_cloudfront_distribution" "main" {
     aliases             = var.aliases
     web_acl_id          = var.web_acl_id
     retain_on_delete    = var.retain_on_delete
+    price_class         = var.price_class
 
     # One or more origins for this distribution (multiples allowed).
     dynamic "origin" {
@@ -70,7 +71,6 @@ resource "aws_cloudfront_distribution" "main" {
             max_ttl                 = lookup(ordered_cache_behavior.value, "max_ttl", null)
             compress                = lookup(ordered_cache_behavior.value, "compress", null)
             viewer_protocol_policy  = lookup(ordered_cache_behavior.value, "viewer_protocol_policy", null)
-            price_class             = lookup(ordered_cache_behavior.value, "price_class", null)
 
             dynamic "forwarded_values" {
                 for_each = length(keys(lookup(ordered_cache_behavior.value, "forwarded_values", {}))) == 0 ? [] : [lookup(ordered_cache_behavior.value, "forwarded_values", {})]
