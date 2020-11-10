@@ -9,7 +9,7 @@ resource "aws_cloudfront_distribution" "main" {
     enabled             = var.enabled
     is_ipv6_enabled     = var.is_ipv6_enabled
     comment             = var.comment
-    default_root_object = var.default_cache_behavior
+    default_root_object = var.default_root_object
     aliases             = var.aliases
     web_acl_id          = var.web_acl_id
     retain_on_delete    = var.retain_on_delete
