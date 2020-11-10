@@ -1,8 +1,8 @@
-resource "aws_cloudfront_origin_access_identity" "main" {
-    count = var.create_cdn ? 1 : 0
-
-    comment = var.comment
-}
+#resource "aws_cloudfront_origin_access_identity" "main" {
+#    count = var.create_cdn ? 1 : 0
+#
+#    comment = var.comment
+#}
 resource "aws_cloudfront_distribution" "main" {
     count = var.create_cdn ? 1 : 0
 
@@ -23,7 +23,7 @@ resource "aws_cloudfront_distribution" "main" {
             domain_name = lookup(origin.value, "domain_name", null)
             origin_id   = lookup(origin.value, "origin_id", null)
             s3_origin_config {
-                origin_access_identity = aws_cloudfront_origin_access_identity.main.0.cloudfront_access_identity_path
+                origin_access_identity = lookup(origin.value, "origin_access_identity", null)
             }
         }
     }
