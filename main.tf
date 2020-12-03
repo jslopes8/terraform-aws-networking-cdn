@@ -3,6 +3,11 @@
 #
 #    comment = var.comment
 #}
+
+#
+# CDN - CloudFront
+#
+
 resource "aws_cloudfront_distribution" "main" {
     count = var.create_cdn ? 1 : 0
 
@@ -14,6 +19,7 @@ resource "aws_cloudfront_distribution" "main" {
     web_acl_id          = var.web_acl_id
     retain_on_delete    = var.retain_on_delete
     price_class         = var.price_class
+    trusted_signers     = var.trusted_signers
 
     # One or more origins for this distribution (multiples allowed).
     dynamic "origin" {
@@ -39,18 +45,21 @@ resource "aws_cloudfront_distribution" "main" {
             min_ttl                 = lookup(default_cache_behavior.value, "min_ttl", null)
             default_ttl             = lookup(default_cache_behavior.value, "default_ttl", null)
             max_ttl                 = lookup(default_cache_behavior.value, "max_ttl", null)
+            trusted_signers         = lookup(default_cache_behavior.value, "trusted_signers", null)
 
             dynamic "forwarded_values" {
                 for_each = length(keys(lookup(default_cache_behavior.value, "forwarded_values", {}))) == 0 ? [] : [lookup(default_cache_behavior.value, "forwarded_values", {})]
                 
                 content {
-                    query_string = lookup(forwarded_values.value, "query_string", null)
+                    query_string    = lookup(forwarded_values.value, "query_string", null)
+                    headers         = lookup(forwarded_values.value, "headers", null)
 
                     dynamic "cookies" {
                         for_each = length(keys(lookup(forwarded_values.value, "cookies", {}))) == 0 ? [] : [lookup(forwarded_values.value, "cookies", {})]
 
                         content {
                             forward = lookup(cookies.value, "forward", null)
+                            whitelisted_names   = lookup(cookies.value, "whitelist", null)
                         }
                     }
                 }
@@ -71,6 +80,7 @@ resource "aws_cloudfront_distribution" "main" {
             max_ttl                 = lookup(ordered_cache_behavior.value, "max_ttl", null)
             compress                = lookup(ordered_cache_behavior.value, "compress", null)
             viewer_protocol_policy  = lookup(ordered_cache_behavior.value, "viewer_protocol_policy", null)
+            trusted_signers         = lookup(ordered_cache_behavior.value, "trusted_signers", null)
 
             dynamic "forwarded_values" {
                 for_each = length(keys(lookup(ordered_cache_behavior.value, "forwarded_values", {}))) == 0 ? [] : [lookup(ordered_cache_behavior.value, "forwarded_values", {})]
@@ -83,7 +93,8 @@ resource "aws_cloudfront_distribution" "main" {
                         for_each = length(keys(lookup(forwarded_values.value, "cookies", {}))) == 0 ? [] : [lookup(forwarded_values.value, "cookies", {})]
 
                         content {
-                            forward = lookup(cookies.value, "forward", null)
+                            forward             = lookup(cookies.value, "forward", null)
+                            whitelisted_names   = lookup(cookies.value, "whitelist", null)
                         }
                     }
                 }
@@ -114,6 +125,7 @@ resource "aws_cloudfront_distribution" "main" {
         }
     }
 
+
     # The logging configuration that controls how logs are written to your distribution (maximum one).
     dynamic "logging_config" {
         for_each = var.logging_config
@@ -125,4 +137,18 @@ resource "aws_cloudfront_distribution" "main" {
     }
 
     tags = var.default_tags
-}   
+}
+
+#
+# Key - Public Key
+#
+
+resource "aws_cloudfront_public_key" "main" {
+    count = var.create_cdn ? length(var.public_key) : 0
+
+    comment     = lookup(var.public_key[count.index], "comment", null)
+    encoded_key = lookup(var.public_key[count.index], "file_public_key_pem", null)
+    name        = lookup(var.public_key[count.index], "public_key_name", null)
+
+    depends_on = [ aws_cloudfront_distribution.main  ]
+}

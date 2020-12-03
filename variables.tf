@@ -62,3 +62,11 @@ variable "default_tags" {
     type = map(string)
     default = {}
 }
+variable "public_key" {
+    type = any
+    default = []   
+}
+variable "trusted_signers" {
+    type = list
+    default = []   
+}
