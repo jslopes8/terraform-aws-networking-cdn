@@ -19,7 +19,6 @@ resource "aws_cloudfront_distribution" "main" {
     web_acl_id          = var.web_acl_id
     retain_on_delete    = var.retain_on_delete
     price_class         = var.price_class
-    trusted_signers     = var.trusted_signers
 
     # One or more origins for this distribution (multiples allowed).
     dynamic "origin" {
