@@ -27,8 +27,26 @@ resource "aws_cloudfront_distribution" "main" {
         content {
             domain_name = lookup(origin.value, "domain_name", null)
             origin_id   = lookup(origin.value, "origin_id", null)
-            s3_origin_config {
-                origin_access_identity = lookup(origin.value, "origin_access_identity", null)
+
+            # If a CloudFront S3 origin configuration information.
+            dynamic "s3_origin_config" {
+                for_each = length(keys(lookup(origin.value, "s3_origin_config", {}))) == 0 ? [] : [lookup(origin.value, "s3_origin_config", {})]
+                content {
+                    origin_access_identity = lookup(s3_origin_config.value, "origin_access_identity", null)
+                }
+            }
+
+            # If a custom origin required
+            dynamic "custom_origin_config" {
+                for_each = length(keys(lookup(origin.value, "custom_origin_config", {}))) == 0 ? [] : [lookup(origin.value, "custom_origin_config", {})]
+                content {
+                    http_port                   = lookup(custom_origin_config.value, "http_port", null)
+                    https_port                  = lookup(custom_origin_config.value, "https_port", null)
+                    origin_keepalive_timeout    = lookup(custom_origin_config.value, "keepalive_timeout", null)
+                    origin_protocol_policy      = lookup(custom_origin_config.value, "protocol_policy", null)
+                    origin_read_timeout         = lookup(custom_origin_config.value, "read_timeout", null)
+                    origin_ssl_protocols        = lookup(custom_origin_config.value, "ssl_protocols", null)
+                }
             }
         }
     }

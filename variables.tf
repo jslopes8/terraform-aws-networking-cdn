@@ -31,8 +31,8 @@ variable "web_acl_id" {
     default = null
 }
 variable "retain_on_delete" {
-    type = string
-    default = null
+    type = bool
+    default = false
 }
 variable "origin_settings" {
     type = any
